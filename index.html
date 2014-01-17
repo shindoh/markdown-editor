@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title></title>
-    <link rel="stylesheet" type="text/css" href="css/ui_styles.css" />
+    <link rel="stylesheet" type="text/css" href="css/styles.css" />
 
     <!-- libraries -->
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
@@ -14,11 +14,11 @@
     <script type="text/javascript" src="http://layout.jquery-dev.net/lib/js/jquery.layout-latest.min.js"></script>
     <!-- end of libraries -->
 
-
     <!-- markdown libraries -->
-    <script type="text/javascript" src="js/pagedown-ace/Markdown.Converter.js"></script>
-    <script type="text/javascript" src="js/pagedown-ace/Markdown.Sanitizer.js"></script>
-    <script src="http://cdnjs.cloudflare.com/ajax/libs/ace/1.1.01/ace.js"></script>
+    <script type="text/javascript" src="js/lib/marked.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/ace/1.1.01/ace.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/ace/1.1.01/mode-markdown.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/ace/1.1.01/theme-textmate.js"></script>
     <!-- end of markdown libraries -->
 
     <script type="text/javascript" src="js/previewer/editor_watcher.js"></script>
@@ -31,6 +31,9 @@
     <div class="ui-layout-west">
         <div id="editor-view"></div>
     </div>
-    <div class="ui-layout-north">North</div>
+    <!-- Title & Toolbar -->
+    <div class="ui-layout-north">
+        Markdown Editor
+    </div>
 </body>
 </html>

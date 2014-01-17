@@ -1,7 +1,7 @@
 # Markdown Previewer for PageDown
 
 # Constants
-DELAYED_PREVIEW_TIME_MS = 100 # milliseconds
+DELAYED_PREVIEW_TIME_MS = 50 # milliseconds
 
 # TODO fix compatibility
 getScrollHeight = (obj) ->
@@ -38,13 +38,10 @@ class EditorWatcher
   makePreview: () ->
     curSource = @aceEditor.getValue()
     if @oldSource isnt curSource
-      html = @makeHtml curSource
+      html = @converter curSource
       @previewView.html html
 
     @oldSource = curSource
-
-  makeHtml: (markdown) ->
-    @converter.makeHtml markdown
 
 root = exports ? this
 root.EditorWatcher = EditorWatcher
