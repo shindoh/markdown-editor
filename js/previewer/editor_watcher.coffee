@@ -1,5 +1,8 @@
 # Markdown Previewer for PageDown
 
+# Constants
+DELAYED_PREVIEW_TIME_MS = 100 # milliseconds
+
 # TODO fix compatibility
 getScrollHeight = (obj) ->
   return obj[0].scrollHeight;
@@ -7,29 +10,38 @@ getScrollHeight = (obj) ->
 class EditorWatcher
   constructor: (converter) ->
     @converter = converter
-    @ace_editor = null
+    @aceEditor = null
+    @delayedPreviewCall = null
+    @oldSource = null
 
-  setup: (ace_editor, preview_view) ->
-    @ace_editor = ace_editor;
-    @preview_view = preview_view
+  setup: (aceEditor, previewView) ->
+    @aceEditor = aceEditor;
+    @previewView = previewView
 
-    @ace_editor.session.on 'changeScrollTop', @syncScroll.bind(this)
-    @ace_editor.session.selection.on 'changeCursor', @syncScroll.bind(this)
-    setInterval @watch.bind(this), 1000
+    @aceEditor.getSession().on 'changeScrollTop', @syncScroll.bind(this)
+    @aceEditor.getSession().selection.on 'changeCursor', @syncScroll.bind(this)
+    @aceEditor.getSession().on 'change', @onChangeEditor.bind(this)
+
+  onChangeEditor: (obj) ->
+    # Clear previous delayed call
+    if @delayedPreviewCall isnt null then clearTimeout @delayedPreviewCall
+    @delayedPreviewCall = setTimeout @makePreview.bind(this), DELAYED_PREVIEW_TIME_MS
 
   syncScroll: () ->
-    editor_scroll_range = @ace_editor.session.getLength()
-    preview_scroll_range = getScrollHeight @preview_view
-    scroll_factor = @ace_editor.getFirstVisibleRow() / editor_scroll_range
-    @preview_view.scrollTop scroll_factor * preview_scroll_range
+    editorScrollRange = @aceEditor.getSession().getLength()
+    previewScrollRange = getScrollHeight @previewView
+    scrollFactor = @aceEditor.getFirstVisibleRow() / editorScrollRange
+    @previewView.stop().animate {
+      scrollTop: previewScrollRange * scrollFactor
+    }, 100
 
-  watch: () ->
-    cur_input = @ace_editor.getValue()
-    if @old_input isnt cur_input
-      html = @makeHtml cur_input
-      @preview_view.html html
+  makePreview: () ->
+    curSource = @aceEditor.getValue()
+    if @oldSource isnt curSource
+      html = @makeHtml curSource
+      @previewView.html html
 
-    @old_input = cur_input
+    @oldSource = curSource
 
   makeHtml: (markdown) ->
     @converter.makeHtml markdown

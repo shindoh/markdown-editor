@@ -1,4 +1,5 @@
 @bg-color: #fff;
+@preview-border: 5px;
 
 body {
   background-color: @bg-color;
@@ -6,10 +7,11 @@ body {
 
 #preview-view {
   position: absolute;
-  top: 5px;
-  right: 5px;
-  bottom: 5px;
-  left: 5px;
+  top: @preview-border;
+  right: @preview-border;
+  bottom: @preview-border;
+  left: @preview-border;
+  overflow: auto;
 }
 
 #editor-view {

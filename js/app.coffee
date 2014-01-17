@@ -1,15 +1,21 @@
 $ ->
-  # Layout
+  # jQuery Layout Plugin
   $('body').layout {
     west__size: .5,
-    applyDefaultStyles: true
+    applyDefaultStyles: true,
+
+    # Fires when layout is resized
+    onresize: () ->
+      aceEditor.resize()
   }
 
-  preview_view = $('#preview-view')
+  previewView = $('#preview-view')
 
   # Apply Markdown
-  markdown_converter = new Markdown.Converter
+  markdownConverter = new Markdown.Converter
 
-  ace_editor = ace.edit 'editor-view'
-  editor_watcher = new EditorWatcher markdown_converter
-  editor_watcher.setup ace_editor, preview_view
+  aceEditor = ace.edit 'editor-view'
+  aceEditor.getSession().setMode "ace/mode/markdown"
+
+  editorWatcher = new EditorWatcher markdownConverter
+  editorWatcher.setup aceEditor, previewView
