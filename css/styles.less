@@ -1,5 +1,8 @@
+@import "markdown_styles";
+
 @bg-color: #fff;
-@preview-border: 5px;
+@preview-border: 0;
+@preview-padding: 15px;
 
 body {
   background-color: @bg-color;
@@ -11,7 +14,11 @@ body {
   right: @preview-border;
   bottom: @preview-border;
   left: @preview-border;
+  padding: @preview-padding;
+  padding-top: 0px;
   overflow: auto;
+
+  .markdown-default;
 }
 
 #editor-view {
