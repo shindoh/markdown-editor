@@ -1,11 +1,11 @@
-# Markdown Previewer for PageDown
+# Markdown Previewer for Marked
 
 # Constants
-DELAYED_PREVIEW_TIME_MS = 50 # milliseconds
+DELAYED_PREVIEW_TIME_MS = 200
 
 # TODO fix compatibility
 getScrollHeight = (obj) ->
-  return obj[0].scrollHeight;
+  obj[0].scrollHeight;
 
 class EditorWatcher
   constructor: (converter) ->
@@ -18,9 +18,9 @@ class EditorWatcher
     @aceEditor = aceEditor;
     @previewView = previewView
 
-    @aceEditor.getSession().on 'changeScrollTop', @syncScroll.bind(this)
-    @aceEditor.getSession().selection.on 'changeCursor', @syncScroll.bind(this)
-    @aceEditor.getSession().on 'change', @onChangeEditor.bind(this)
+    @aceEditor.getSession().on 'changeScrollTop', @syncScroll.bind this
+    @aceEditor.getSession().selection.on 'changeCursor', @syncScroll.bind this
+    @aceEditor.getSession().on 'change', @onChangeEditor.bind this
 
   onChangeEditor: (obj) ->
     # Clear previous delayed call
