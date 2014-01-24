@@ -6,23 +6,26 @@
     <link rel="stylesheet" type="text/css" href="css/styles.css" />
 
     <!-- libraries -->
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-    <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="external/jquery.min.js"></script>
+    <script type="text/javascript" src="external/jquery-ui.min.js"></script>
 
-    <script type="text/javascript" src="http://underscorejs.org/underscore-min.js"></script>
-    <script type="text/javascript" src="http://backbonejs.org/backbone-min.js"></script>
-    <script type="text/javascript" src="http://layout.jquery-dev.net/lib/js/jquery.layout-latest.min.js"></script>
+    <script type="text/javascript" src="external/underscore-min.js"></script>
+    <script type="text/javascript" src="external/backbone-min.js"></script>
+    <script type="text/javascript" src="external/jquery.layout-latest.min.js"></script>
+
+    <!-- ace editor -->
+    <script type="text/javascript" src="external/ace.js"></script>
+    <script type="text/javascript" src="external/mode-markdown.js"></script>
     <!-- end of libraries -->
 
     <!-- markdown libraries -->
     <script type="text/javascript" src="js/lib/marked.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/ace/1.1.01/ace.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/ace/1.1.01/mode-markdown.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/ace/1.1.01/theme-textmate.js"></script>
     <!-- end of markdown libraries -->
 
-    <script type="text/javascript" src="js/previewer/editor_watcher.js"></script>
-    <script type="text/javascript" src="js/app.js"></script>
+    <script type="text/javascript">
+        var app = require('./js/app.js');
+        app.initApp();
+    </script>
 </head>
 <body>
     <div class="ui-layout-center">

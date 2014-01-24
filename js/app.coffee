@@ -1,4 +1,7 @@
-$ ->
+editorWatcher = require('./previewer/editorwatcher.js')
+markDoc = require('./model/markdoc.js')
+
+initApp = () ->
   # jQuery Layout Plugin
   $('body').layout {
     west__size: .5,
@@ -8,6 +11,8 @@ $ ->
     onresize: () ->
       aceEditor.resize()
   }
+
+  markDoc = new markDoc.MarkDoc()
 
   marked.setOptions {
     renderer: new marked.Renderer(),
@@ -32,7 +37,8 @@ $ ->
 
   aceEditor = ace.edit 'editor-view'
   aceEditor.getSession().setMode 'ace/mode/markdown'
-  aceEditor.setTheme 'ace/theme/textmate'
 
-  editorWatcher = new EditorWatcher converter
+  editorWatcher = new editorWatcher.EditorWatcher converter, markDoc
   editorWatcher.setup aceEditor, previewView
+
+exports.initApp = initApp;
