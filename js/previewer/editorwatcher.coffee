@@ -8,11 +8,12 @@ getScrollHeight = (obj) ->
   obj[0].scrollHeight;
 
 class EditorWatcher
-  constructor: (converter) ->
+  constructor: (converter, markDoc) ->
     @converter = converter
     @aceEditor = null
     @delayedPreviewCall = null
     @oldSource = null
+    @markDoc = markDoc
 
   setup: (aceEditor, previewView) ->
     @aceEditor = aceEditor;
@@ -23,6 +24,11 @@ class EditorWatcher
     @aceEditor.getSession().on 'change', @onChangeEditor.bind this
 
   onChangeEditor: (obj) ->
+    # Reflect textEditor value to markDoc
+    @markDoc.setText @aceEditor.getValue()
+
+    console.log @markDoc
+
     # Clear previous delayed call
     if @delayedPreviewCall isnt null then clearTimeout @delayedPreviewCall
     @delayedPreviewCall = setTimeout @makePreview.bind(this), DELAYED_PREVIEW_TIME_MS
