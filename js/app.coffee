@@ -1,7 +1,7 @@
 editorWatcher = require('./previewer/editorwatcher.js')
 markDoc = require('./model/markdoc.js')
 
-initApp = () ->
+initApp = (ace, marked) ->
   # jQuery Layout Plugin
   $('body').layout {
     west__size: .5,

@@ -23,8 +23,15 @@
     <!-- end of markdown libraries -->
 
     <script type="text/javascript">
-        var app = require('./js/app.js');
-        app.initApp();
+        // Transfer jquery to global
+        global.$ = $;
+        global.document = document;
+
+        $(function() {
+            // Dom is loaded
+            var app = require('./js/app.js');
+            app.initApp(ace, marked);
+        });
     </script>
 </head>
 <body>
