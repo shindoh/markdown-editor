@@ -26,6 +26,7 @@
         // Transfer jquery to global
         global.$ = $;
         global.document = document;
+        global.Backbone = Backbone;
 
         $(function() {
             // Dom is loaded
@@ -35,6 +36,9 @@
     </script>
 </head>
 <body>
+    <div class="ui-layout-east">
+        <div id="resource-panel"></div>
+    </div>
     <div class="ui-layout-center">
         <div id="preview-view"></div>
     </div>

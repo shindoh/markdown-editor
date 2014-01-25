@@ -1,10 +1,18 @@
 editorWatcher = require('./previewer/editorwatcher.js')
 markDoc = require('./model/markdoc.js')
+resourcesView = require('./views/resourcesview.js')
 
 initApp = (ace, marked) ->
   # jQuery Layout Plugin
   $('body').layout {
-    west__size: .5,
+    west: {
+      size: .5,
+      closable: false
+    },
+    east: {
+      size: 200,
+#      initClosed: true
+    },
     applyDefaultStyles: true,
 
     # Fires when layout is resized
@@ -12,7 +20,19 @@ initApp = (ace, marked) ->
       aceEditor.resize()
   }
 
-  markDoc = new markDoc.MarkDoc()
+  doc = new markDoc.MarkDoc()
+  doc.set 'test1', null
+  doc.set 'test2', 'this is text'
+
+  resourcesView = new resourcesView.ResourcesView
+    model: doc
+  resourcesView.setElement $('#resource-panel')
+  resourcesView.render()
+
+  resources = doc.get 'resources'
+  resource_model = new markDoc.ResourceModel()
+  resources.add resource_model
+  resource_model.set 'content', 'This is world'
 
   marked.setOptions {
     renderer: new marked.Renderer(),
@@ -38,7 +58,7 @@ initApp = (ace, marked) ->
   aceEditor = ace.edit 'editor-view'
   aceEditor.getSession().setMode 'ace/mode/markdown'
 
-  editorWatcher = new editorWatcher.EditorWatcher converter, markDoc
+  editorWatcher = new editorWatcher.EditorWatcher converter, doc
   editorWatcher.setup aceEditor, previewView
 
 exports.initApp = initApp;

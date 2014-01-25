@@ -1,22 +1,21 @@
 # Document Class
-class MarkDoc
-  constructor: () ->
-    @resources = {};
-    @text = ''
+class ResourceModel extends Backbone.Model
+  defaults: {
+    content: 'Hello!'
+  }
 
-  setText: (text) ->
-    @text = text
+class ResourceCollection extends Backbone.Collection
+  model: ResourceModel
 
-  getText: () ->
-    @text
-
-  addResource: (name, buffer) ->
-    @resources[name] = buffer
-
-  removeResource: (name) ->
-    delete @resources[name]
-
-  getResources: () ->
-    @resources
+class MarkDoc extends Backbone.Model
+  defaults: {
+    text: '',
+    resources: new ResourceCollection()
+  },
+  initialize: () ->
+    @get('resources').bind 'change', () =>
+      @trigger 'change:resources'
+      @trigger 'change'
 
 exports.MarkDoc = MarkDoc
+exports.ResourceModel = ResourceModel
