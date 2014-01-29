@@ -26,7 +26,7 @@ class EditorWatcher
   onChangeEditor: (obj) ->
     # Reflect textEditor value to markDoc
     @markDoc.setText @aceEditor.getValue()
-    
+
     # Clear previous delayed call
     if @delayedPreviewCall isnt null then clearTimeout @delayedPreviewCall
     @delayedPreviewCall = setTimeout @makePreview.bind(this), DELAYED_PREVIEW_TIME_MS

@@ -23,18 +23,21 @@
     <!-- end of markdown libraries -->
 
     <script type="text/javascript">
-        // Transfer jquery to global
+        // Define global objects
         global.$ = $;
         global.document = document;
 
         $(function() {
-            // Dom is loaded
+            // DOM is loaded
             var app = require('./js/app.js');
             app.initApp(ace, marked);
         });
     </script>
 </head>
 <body>
+    <div class="ui-layout-east">
+        <div id="resource-panel"></div>
+    </div>
     <div class="ui-layout-center">
         <div id="preview-view"></div>
     </div>

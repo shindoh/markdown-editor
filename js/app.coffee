@@ -4,7 +4,16 @@ markDoc = require('./model/markdoc.js')
 initApp = (ace, marked) ->
   # jQuery Layout Plugin
   $('body').layout {
-    west__size: .5,
+    west: {
+      size: .5,
+      slidable: false,
+      closable: false
+    },
+    east: {
+      size: 150,
+      slidable: true,
+      initClosed: true
+    },
     applyDefaultStyles: true,
 
     # Fires when layout is resized
