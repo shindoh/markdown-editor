@@ -120,7 +120,8 @@ Lexer.rules = block;
 
 Lexer.lex = function(src, options) {
   var lexer = new Lexer(options);
-  return lexer.lex(src);
+  var tokens = lexer.lex(src);
+  return tokens;
 };
 
 /**
@@ -134,14 +135,14 @@ Lexer.prototype.lex = function(src) {
     .replace(/\u00a0/g, ' ')
     .replace(/\u2424/g, '\n');
 
-  return this.token(src, true);
+  return this.token(src, true, 0);
 };
 
 /**
  * Lexing
  */
 
-Lexer.prototype.token = function(src, top) {
+Lexer.prototype.token = function(src, top, index) {
   var src = src.replace(/^ +$/gm, '')
     , next
     , loose
@@ -151,7 +152,15 @@ Lexer.prototype.token = function(src, top) {
     , item
     , space
     , i
-    , l;
+    , l
+    , useindex;
+
+  if (typeof index == 'undefined')
+    index = -1;
+  useindex = index >= 0;
+  function getindex(index) {
+      return useindex ? index : -1;
+  }
 
   while (src) {
     // newline
@@ -159,9 +168,11 @@ Lexer.prototype.token = function(src, top) {
       src = src.substring(cap[0].length);
       if (cap[0].length > 1) {
         this.tokens.push({
-          type: 'space'
+          type: 'space',
+          index: getindex(index)
         });
       }
+      index += cap[0].length;
     }
 
     // code
@@ -172,8 +183,10 @@ Lexer.prototype.token = function(src, top) {
         type: 'code',
         text: !this.options.pedantic
           ? cap.replace(/\n+$/, '')
-          : cap
+          : cap,
+        index: getindex(index)
       });
+      index += cap[0].length;
       continue;
     }
 
@@ -183,8 +196,10 @@ Lexer.prototype.token = function(src, top) {
       this.tokens.push({
         type: 'code',
         lang: cap[2],
-        text: cap[3]
+        text: cap[3],
+        index: getindex(index)
       });
+      index += cap[0].length;
       continue;
     }
 
@@ -194,8 +209,10 @@ Lexer.prototype.token = function(src, top) {
       this.tokens.push({
         type: 'heading',
         depth: cap[1].length,
-        text: cap[2]
+        text: cap[2],
+        index: getindex(index)
       });
+      index += cap[0].length;
       continue;
     }
 
@@ -207,7 +224,8 @@ Lexer.prototype.token = function(src, top) {
         type: 'table',
         header: cap[1].replace(/^ *| *\| *$/g, '').split(/ *\| */),
         align: cap[2].replace(/^ *|\| *$/g, '').split(/ *\| */),
-        cells: cap[3].replace(/\n$/, '').split('\n')
+        cells: cap[3].replace(/\n$/, '').split('\n'),
+        index: getindex(index)
       };
 
       for (i = 0; i < item.align.length; i++) {
@@ -227,6 +245,7 @@ Lexer.prototype.token = function(src, top) {
       }
 
       this.tokens.push(item);
+      index += cap[0].length;
 
       continue;
     }
@@ -237,8 +256,10 @@ Lexer.prototype.token = function(src, top) {
       this.tokens.push({
         type: 'heading',
         depth: cap[2] === '=' ? 1 : 2,
-        text: cap[1]
+        text: cap[1],
+        index: getindex(index)
       });
+      index += cap[0].length;
       continue;
     }
 
@@ -246,8 +267,10 @@ Lexer.prototype.token = function(src, top) {
     if (cap = this.rules.hr.exec(src)) {
       src = src.substring(cap[0].length);
       this.tokens.push({
-        type: 'hr'
+        type: 'hr',
+        index: getindex(index)
       });
+      index += cap[0].length;
       continue;
     }
 
@@ -256,8 +279,10 @@ Lexer.prototype.token = function(src, top) {
       src = src.substring(cap[0].length);
 
       this.tokens.push({
-        type: 'blockquote_start'
+        type: 'blockquote_start',
+        index: getindex(index)
       });
+      index += cap[0].length;
 
       cap = cap[0].replace(/^ *> ?/gm, '');
 
@@ -280,8 +305,10 @@ Lexer.prototype.token = function(src, top) {
 
       this.tokens.push({
         type: 'list_start',
-        ordered: bull.length > 1
+        ordered: bull.length > 1,
+        index: getindex(index)
       });
+      index += cap[0].length;
 
       // Get each top-level item.
       cap = cap[0].match(this.rules.item);
@@ -355,8 +382,10 @@ Lexer.prototype.token = function(src, top) {
           ? 'paragraph'
           : 'html',
         pre: cap[1] === 'pre' || cap[1] === 'script' || cap[1] === 'style',
-        text: cap[0]
+        text: cap[0],
+        index: getindex(index)
       });
+      index += cap[0].length;
       continue;
     }
 
@@ -365,8 +394,10 @@ Lexer.prototype.token = function(src, top) {
       src = src.substring(cap[0].length);
       this.tokens.links[cap[1].toLowerCase()] = {
         href: cap[2],
-        title: cap[3]
+        title: cap[3],
+        index: getindex(index)
       };
+      index += cap[0].length;
       continue;
     }
 
@@ -378,8 +409,10 @@ Lexer.prototype.token = function(src, top) {
         type: 'table',
         header: cap[1].replace(/^ *| *\| *$/g, '').split(/ *\| */),
         align: cap[2].replace(/^ *|\| *$/g, '').split(/ *\| */),
-        cells: cap[3].replace(/(?: *\| *)?\n$/, '').split('\n')
+        cells: cap[3].replace(/(?: *\| *)?\n$/, '').split('\n'),
+        index: getindex(index)
       };
+      index += cap[0].length;
 
       for (i = 0; i < item.align.length; i++) {
         if (/^ *-+: *$/.test(item.align[i])) {
@@ -400,7 +433,6 @@ Lexer.prototype.token = function(src, top) {
       }
 
       this.tokens.push(item);
-
       continue;
     }
 
@@ -411,8 +443,10 @@ Lexer.prototype.token = function(src, top) {
         type: 'paragraph',
         text: cap[1].charAt(cap[1].length - 1) === '\n'
           ? cap[1].slice(0, -1)
-          : cap[1]
+          : cap[1],
+        index: getindex(index)
       });
+      index += cap[0].length;
       continue;
     }
 
@@ -422,8 +456,10 @@ Lexer.prototype.token = function(src, top) {
       src = src.substring(cap[0].length);
       this.tokens.push({
         type: 'text',
-        text: cap[0]
+        text: cap[0],
+        index: getindex(index)
       });
+      index += cap[0].length;
       continue;
     }
 
@@ -740,7 +776,7 @@ function Renderer(options) {
   this.options = options || {};
 }
 
-Renderer.prototype.code = function(code, lang, escaped) {
+Renderer.prototype.code = function(token, code, lang, escaped) {
   if (this.options.highlight) {
     var out = this.options.highlight(code, lang);
     if (out != null && out !== code) {
@@ -763,15 +799,15 @@ Renderer.prototype.code = function(code, lang, escaped) {
     + '\n</code></pre>\n';
 };
 
-Renderer.prototype.blockquote = function(quote) {
+Renderer.prototype.blockquote = function(token, quote) {
   return '<blockquote>\n' + quote + '</blockquote>\n';
 };
 
-Renderer.prototype.html = function(html) {
+Renderer.prototype.html = function(token, html) {
   return html;
 };
 
-Renderer.prototype.heading = function(text, level, raw) {
+Renderer.prototype.heading = function(token, text, level, raw) {
   return '<h'
     + level
     + ' id="'
@@ -784,24 +820,24 @@ Renderer.prototype.heading = function(text, level, raw) {
     + '>\n';
 };
 
-Renderer.prototype.hr = function() {
+Renderer.prototype.hr = function(token) {
   return '<hr>\n';
 };
 
-Renderer.prototype.list = function(body, ordered) {
+Renderer.prototype.list = function(token, body, ordered) {
   var type = ordered ? 'ol' : 'ul';
   return '<' + type + '>\n' + body + '</' + type + '>\n';
 };
 
-Renderer.prototype.listitem = function(text) {
+Renderer.prototype.listitem = function(token, text) {
   return '<li>' + text + '</li>\n';
 };
 
-Renderer.prototype.paragraph = function(text) {
+Renderer.prototype.paragraph = function(token, text) {
   return '<p>' + text + '</p>\n';
 };
 
-Renderer.prototype.table = function(header, body) {
+Renderer.prototype.table = function(token, header, body) {
   return '<table>\n'
     + '<thead>\n'
     + header
@@ -812,11 +848,11 @@ Renderer.prototype.table = function(header, body) {
     + '</table>\n';
 };
 
-Renderer.prototype.tablerow = function(content) {
+Renderer.prototype.tablerow = function(token, content) {
   return '<tr>\n' + content + '</tr>\n';
 };
 
-Renderer.prototype.tablecell = function(content, flags) {
+Renderer.prototype.tablecell = function(token, content, flags) {
   var type = flags.header ? 'th' : 'td';
   var tag = flags.align
     ? '<' + type + ' style="text-align:' + flags.align + '">'
@@ -948,21 +984,24 @@ Parser.prototype.parseText = function() {
  */
 
 Parser.prototype.tok = function() {
+  var curtoken = this.token;
   switch (this.token.type) {
     case 'space': {
       return '';
     }
     case 'hr': {
-      return this.renderer.hr();
+      return this.renderer.hr(curtoken);
     }
     case 'heading': {
       return this.renderer.heading(
+        curtoken,
         this.inline.output(this.token.text),
         this.token.depth,
         this.token.text);
     }
     case 'code': {
-      return this.renderer.code(this.token.text,
+      return this.renderer.code(curtoken,
+        this.token.text,
         this.token.lang,
         this.token.escaped);
     }
@@ -980,11 +1019,12 @@ Parser.prototype.tok = function() {
       for (i = 0; i < this.token.header.length; i++) {
         flags = { header: true, align: this.token.align[i] };
         cell += this.renderer.tablecell(
+          curtoken,
           this.inline.output(this.token.header[i]),
           { header: true, align: this.token.align[i] }
         );
       }
-      header += this.renderer.tablerow(cell);
+      header += this.renderer.tablerow(curtoken, cell);
 
       for (i = 0; i < this.token.cells.length; i++) {
         row = this.token.cells[i];
@@ -992,14 +1032,15 @@ Parser.prototype.tok = function() {
         cell = '';
         for (j = 0; j < row.length; j++) {
           cell += this.renderer.tablecell(
+            curtoken,
             this.inline.output(row[j]),
             { header: false, align: this.token.align[j] }
           );
         }
 
-        body += this.renderer.tablerow(cell);
+        body += this.renderer.tablerow(curtoken, cell);
       }
-      return this.renderer.table(header, body);
+      return this.renderer.table(this.token, header, body);
     }
     case 'blockquote_start': {
       var body = '';
@@ -1008,7 +1049,7 @@ Parser.prototype.tok = function() {
         body += this.tok();
       }
 
-      return this.renderer.blockquote(body);
+      return this.renderer.blockquote(curtoken, body);
     }
     case 'list_start': {
       var body = ''
@@ -1018,7 +1059,7 @@ Parser.prototype.tok = function() {
         body += this.tok();
       }
 
-      return this.renderer.list(body, ordered);
+      return this.renderer.list(curtoken, body, ordered);
     }
     case 'list_item_start': {
       var body = '';
@@ -1029,7 +1070,7 @@ Parser.prototype.tok = function() {
           : this.tok();
       }
 
-      return this.renderer.listitem(body);
+      return this.renderer.listitem(curtoken, body);
     }
     case 'loose_item_start': {
       var body = '';
@@ -1038,19 +1079,19 @@ Parser.prototype.tok = function() {
         body += this.tok();
       }
 
-      return this.renderer.listitem(body);
+      return this.renderer.listitem(curtoken, body);
     }
     case 'html': {
       var html = !this.token.pre && !this.options.pedantic
         ? this.inline.output(this.token.text)
         : this.token.text;
-      return this.renderer.html(html);
+      return this.renderer.html(curtoken, html);
     }
     case 'paragraph': {
-      return this.renderer.paragraph(this.inline.output(this.token.text));
+      return this.renderer.paragraph(curtoken, this.inline.output(this.token.text));
     }
     case 'text': {
-      return this.renderer.paragraph(this.parseText());
+      return this.renderer.paragraph(curtoken, this.parseText());
     }
   }
 };
