@@ -1,3 +1,4 @@
+fooRenderer = require('./lib/foo-renderer.js')
 editorWatcher = require('./previewer/editorwatcher.js')
 markDoc = require('./model/markdoc.js')
 resourcesView = require('./views/resourcesview.js')
@@ -35,7 +36,7 @@ initApp = (ace, marked) ->
   resource_model.set 'content', 'This is world'
 
   marked.setOptions {
-    renderer: new marked.Renderer(),
+    renderer: new fooRenderer.Renderer(),
     gfm: true,
     tables: true,
     breaks: true,
