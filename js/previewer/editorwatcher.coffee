@@ -1,6 +1,7 @@
 # Markdown Previewer for Marked
 
 # Constants
+DELAYED_SCROLL_TIME_MS = 200
 DELAYED_PREVIEW_TIME_MS = 200
 
 # TODO fix compatibility
@@ -12,6 +13,7 @@ class EditorWatcher
     @converter = converter
     @aceEditor = null
     @delayedPreviewCall = null
+    @delayedScrollCall = null
     @oldSource = null
     @markDocument = markDocument
 
@@ -19,25 +21,55 @@ class EditorWatcher
     @aceEditor = aceEditor;
     @previewView = previewView
 
-    @aceEditor.getSession().on 'changeScrollTop', @syncScroll.bind this
-    @aceEditor.getSession().selection.on 'changeCursor', @syncScroll.bind this
+#    @aceEditor.getSession().on 'changeScrollTop', @onChangeCursor.bind this
+    @aceEditor.getSession().getSelection().on 'changeCursor', @onChangeCursor.bind this
     @aceEditor.getSession().on 'change', @onChangeEditor.bind this
 
-  onChangeEditor: (obj) ->
+  onChangeEditor: (e) ->
     # Reflect textEditor value to markDoc
     @markDocument.set 'text', @aceEditor.getValue()
 
     # Clear previous delayed call
-    if @delayedPreviewCall isnt null then clearTimeout @delayedPreviewCall
+    if @delayedPreviewCall?
+      clearTimeout @delayedPreviewCall
     @delayedPreviewCall = setTimeout @makePreview.bind(this), DELAYED_PREVIEW_TIME_MS
 
+  onChangeCursor: (e) ->
+    if @delayedScrollCall?
+      clearTimeout @delayedScrollCall
+    @delayedScrollCall = setTimeout @syncScroll.bind(this), DELAYED_SCROLL_TIME_MS
+
   syncScroll: () ->
+    cursorPosition = @aceEditor.getSession().getSelection().getCursor()
+    cursorIndex = @aceEditor.getSession().getDocument().positionToIndex(cursorPosition, 0)
     editorScrollRange = @aceEditor.getSession().getLength()
     previewScrollRange = getScrollHeight @previewView
-    scrollFactor = @aceEditor.getFirstVisibleRow() / editorScrollRange
-    @previewView.stop().animate {
-      scrollTop: previewScrollRange * scrollFactor
-    }, 100
+
+    # Find position candidates
+    beginElement = null;
+    endElement = null;
+
+    spyCandidates = @previewView.children '[data-index]'
+    spyCandidates.each (i, element) ->
+      dataIndex = $(element).attr 'data-index'
+      if dataIndex is 'undefined'
+        return true # continue
+      # dataIndex to integer
+      dataIndex = parseInt dataIndex
+      if dataIndex < 0
+        return true # continue
+
+      if dataIndex <= cursorIndex
+        beginElement = element
+        return true # continue
+      if beginElement isnt null and dataIndex >= cursorIndex
+        endElement = element
+        return false # break
+
+#    scrollFactor = @aceEditor.getFirstVisibleRow() / editorScrollRange
+#    @previewView.stop().animate {
+#      scrollTop: previewScrollRange * scrollFactor
+#    }, 100
 
   makePreview: () ->
     curSource = @aceEditor.getValue()
