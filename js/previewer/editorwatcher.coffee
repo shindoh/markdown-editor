@@ -1,7 +1,7 @@
 # Markdown Previewer for Marked
 
 # Constants
-DELAYED_SCROLL_TIME_MS = 200
+DELAYED_SCROLL_TIME_MS = 10
 DELAYED_PREVIEW_TIME_MS = 200
 
 # TODO fix compatibility
@@ -16,6 +16,7 @@ class EditorWatcher
     @delayedScrollCall = null
     @oldSource = null
     @markDocument = markDocument
+    @oldFocusedElement = null
 
   setup: (aceEditor, previewView) ->
     @aceEditor = aceEditor;
@@ -66,10 +67,33 @@ class EditorWatcher
         endElement = element
         return false # break
 
-#    scrollFactor = @aceEditor.getFirstVisibleRow() / editorScrollRange
-#    @previewView.stop().animate {
-#      scrollTop: previewScrollRange * scrollFactor
-#    }, 100
+    # add focus to selected element
+    if @oldFocusedElement?
+      $(@oldFocusedElement).removeClass 'selected-element'
+
+    if beginElement is null
+      return
+
+    $(beginElement).addClass 'selected-element'
+    @oldFocusedElement = beginElement
+
+    # sync scroll if element is invisible from view
+    previewViewOffset = @previewView.offset()
+    previewViewOffset.height = @previewView.outerHeight(true)
+    previewViewOffset.bottom = previewViewOffset.top + previewViewOffset.height
+
+    previewViewPadding = @previewView.outerHeight(true) - @previewView.height()
+
+    beginElementOffset = $(beginElement).offset()
+    beginElementOffset.height = $(beginElement).outerHeight(true)
+    beginElementOffset.bottom = beginElementOffset.top + beginElementOffset.height
+
+    if beginElementOffset.bottom < previewViewOffset.top || beginElementOffset.top > previewViewOffset.bottom
+      curOffset = @previewView.scrollTop() + beginElementOffset.top\
+                  - previewViewOffset.top - previewViewPadding
+      @previewView.stop().animate {
+        scrollTop: curOffset
+      }, 500, "easeInOutCubic"
 
   makePreview: () ->
     curSource = @aceEditor.getValue()
@@ -78,6 +102,7 @@ class EditorWatcher
       @previewView.html html
 
     @oldSource = curSource
+    @syncScroll()
 
 root = exports ? this
 root.EditorWatcher = EditorWatcher
